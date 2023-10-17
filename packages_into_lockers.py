@@ -11,91 +11,83 @@
 # can be notified where their package is located.
 # This solution should be able to simulate adding a package to the locker and removing a package given a locker number.
 
-# CLASS FOR INDIVIDUAL LOCKERS!
+import random
+
+
 class Locker:
-    def __init__(self, size, locker_id):
-        self.size = size
+    sizes = {'small': 1, 'medium': 2, 'large': 3}
+
+    def __init__(self, locker_id, size):
         self.locker_id = locker_id
-        self.package = None
+        self.size = size
+        self.package_inside = False
 
     def fits_package(self, package_size):
-        return package_size <= self.size
+        return self.sizes[package_size] <= self.sizes[self.size]
+
+    def __str__(self):
+        return f"Locker {self.locker_id} - Size: {self.size}, Has Package: {self.package_inside}"
 
 
-# CLASS FOR ALL THE LOCKERS TOGETHER!
 class LockerManager:
-    def __init__(self):
-        self.lockers = []
+    locker_sizes = ['small', 'medium', 'large']
+    lockers = []
 
-    # Function that adds locker by creating locker ID and size
-    def add_locker(self, size):
-        locker_id = len(self.lockers) + 1
-        locker = Locker(size, locker_id)
-        self.lockers.append(locker)
+    @staticmethod
+    def allocate_locker_for_package(lockers):
+        package_size = input("Enter package size (small, medium, or large): ").lower()
+        if package_size not in LockerManager.locker_sizes:
+            print("Invalid package size.")
+            return None
 
-    # Locker is allocated (i.e. locker ID is given) for a package according to a locker that fits it
-    def allocate_locker(self, package_size):
-        for locker in self.lockers:
-            if locker.fits_package(package_size) and locker.package is None:
-                locker.package = package_size
+        for locker in lockers:
+            if locker.fits_package(package_size) and not locker.package_inside:
+                locker.package_inside = True
+                print(f"Package placed in locker {locker.locker_id, locker.size}.")
                 return locker.locker_id
+
+        print("No available locker for the package size.")
         return None
 
-    # Add package of size x to specified locker (ID)
-    def add_package_to_locker(self, locker_id, package_size):
-        for locker in self.lockers:
-            if locker.locker_id == locker_id and locker.package is None:
-                locker.package = package_size
-                return True
-        return False
+    @staticmethod
+    def remove_package_from_locker(locker_id):
+        for locker in LockerManager.lockers:
+            if locker.locker_id == locker_id:
+                if locker.package_inside:
+                    locker.package_inside = False
+                    print(f"Package removed from locker {locker.locker_id}.")
+                else:
+                    print(f"No package found in locker {locker.locker_id}.")
+                return
 
-    def remove_package_from_locker(self, locker_id):
-        for locker in self.lockers:
-            if locker.locker_id == locker_id and locker.package:
-                removed_package = locker.package
-                locker.package = None
-                return removed_package
-        return None
-
-    # Show the size of the specified locker and any packages within it.
-    def display_lockers(self):
-        for locker in self.lockers:
-            package_info = f"Package: {locker.package}" if locker.package else "No package"
-            print(f"Locker {locker.locker_id} (Size: {locker.size}): {package_info}")
+        print(f"Locker {locker_id} not found.")
 
 
-# Example usage
+def generate_random_lockers(max_lockers=100000):
+    num_lockers = random.randint(1, max_lockers)
+
+    lockers = []
+
+    for i in range(num_lockers):
+        random_size = random.randint(0, len(LockerManager.locker_sizes) - 1)
+        size = LockerManager.locker_sizes[random_size]
+        locker = Locker(i + 1, size)
+        lockers.append(locker)
+
+    return lockers
+
+
+
 locker_manager = LockerManager()
-locker_manager.add_locker('large')
-locker_manager.add_locker('medium')
-locker_manager.add_locker('small')
-locker_manager.add_locker('large')
-locker_manager.add_locker('medium')
-locker_manager.add_locker('small')
-locker_manager.add_locker('large')
-locker_manager.add_locker('medium')
-locker_manager.add_locker('medium')
+random_lockers = generate_random_lockers()
+LockerManager.lockers = random_lockers
 
-# Allocate lockers for packages
-package_sizes = ['small', 'medium', 'large', 'small', 'medium', 'large', 'small', 'small']
-for package in package_sizes:
-    locker_id = locker_manager.allocate_locker(package)
-    if locker_id:
-        locker_manager.add_package_to_locker(locker_id, package)
+for locker in random_lockers:
+    print(locker)
 
-# Display the state of lockers
-locker_manager.display_lockers()
+# Delivery Driver: "Which locker should I place the package in?"
+allocated_locker_id = LockerManager.allocate_locker_for_package(random_lockers)
 
-# Remove a package from a specific locker
-# removed_package = locker_manager.remove_package_from_locker(1)
-# if removed_package:
-#     print(f"Removed package from Locker 1: {removed_package}")
-# else:
-#     print("Locker 1 is empty or does not exist.")
-
-# Display the updated state of lockers
-# locker_manager.display_lockers()
-
-
-# todo: problem is that packages of smaller sizes are not being allocated even to available larger lockers
-# todo: create a way to check package size according to size depending on number rather than word (eg. 'large = 3')
+# Customer: "I want to remove a package from locker number x"
+locker_to_remove_package = int(input("Enter the locker number to remove the package from: "))
+LockerManager.remove_package_from_locker(locker_to_remove_package)
