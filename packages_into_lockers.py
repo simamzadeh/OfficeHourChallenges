@@ -77,7 +77,6 @@ def generate_random_lockers(max_lockers=100000):
     return lockers
 
 
-
 locker_manager = LockerManager()
 random_lockers = generate_random_lockers()
 LockerManager.lockers = random_lockers
