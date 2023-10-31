@@ -12,7 +12,7 @@ grid = np.random.choice([0, 1], size=(rows, cols))
 
 
 # Defining rules
-def update(img, grid, rows, cols):
+def update(frame, img, grid, rows, cols):
     newGrid = grid.copy()
     for i in range(rows):
         for j in range(cols):
@@ -37,8 +37,8 @@ def update(img, grid, rows, cols):
 
 
 # Create a figure and axis
-fig, axis = plt.subplots()
-img = axis.imshow(grid, interpolation='nearest')
-animation = animation.FuncAnimation(fig, update, fargs=(img, grid, rows, cols), frames=10, interval=50, save_count=50)
+fig, axis = plt.subplots()  # draw more than one plot in one figure
+img = axis.imshow(grid, interpolation='nearest')  # display data as an image
+animation = animation.FuncAnimation(fig, update, frames=10, fargs=(img, grid, rows, cols), interval=50)
 
 plt.show()
